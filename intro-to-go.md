@@ -147,17 +147,136 @@ func main() {
 
 ## Struct
 
+```go
+package main
+
+import "fmt"
+
+type User struct {
+    name string
+    age int
+}
+
+func (u *User) SetName(name string) {
+    u.name = name
+}
+
+func (u User) String() string {
+    return fmt.Sprintf("User %s (age: %d)", u.name, u.age)
+}
+
+func main() {
+    jay := User{
+        name: "Jay Chou",
+        age: 42,
+    }
+    fmt.Println(jay)
+    var baby User
+    baby.SetName("Jim Green")
+    fmt.Println(baby)
+    baby.SetName("Jack")
+    fmt.Println(baby)
+}
+```
+
 ---
 
 ## Error Handling
+
+```go
+package main
+
+import "fmt"
+
+func fab(n int) (int, error) {
+    if n < 1 {
+        return 0, fmt.Errorf("invalid n: %d", n)
+    }
+    x, y := 1, 1
+    for i := 1; i < n; i++ {
+        x, y = y, x+y 
+    }
+    return x, nil
+}
+
+func main() {
+    x, err := fab(3)
+    fmt.Println(x, err)
+    if _, err := fab(0); err != nil {
+        fmt.Printf("Failed to calculate fab: %s\n", err)
+    }
+}
+```
 
 ---
 
 ## Goroutines
 
+```go
+package main
+
+import (
+    "fmt"
+    "time"
+    "sync"
+)
+
+func main() {
+    var wg sync.WaitGroup
+    for i := 0; i < 16; i++ {
+        wg.Add(1)
+        go func(n int) {
+            defer wg.Done()
+            time.Sleep(time.Second)
+            fmt.Printf("Done: %d\n", n)
+        }(i)
+    }
+    wg.Wait()
+}
+```
+
 ---
 
-## Channels
+## Channels - Part 2
+
+```go
+package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+func worker(jobs <-chan int, result chan<- string) {
+    for j := range jobs {
+        result <- fmt.Sprintf("Processed %d", j)
+    }
+}
+
+func main() {
+    jobs := make(chan int, 1)
+    go func() {
+        for i := 0; i < 128; i++ {
+            jobs <- i
+        }
+        close(jobs)
+    }()
+    const nWorkers = 4
+    result := make(chan string, nWorkers)
+    var wg sync.WaitGroup
+    for i := 0; i < nWorkers; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            worker(jobs, result)  
+        }()
+    }
+    for r := range result {
+        fmt.Print(r)
+        fmt.Print(",")
+    }
+}
+```
 
 ---
 
