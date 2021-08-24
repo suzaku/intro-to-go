@@ -17,7 +17,8 @@ theme: ./theme.json
 * Struct
 * Error Handling
 * Goroutines
-* Learning Resources 
+* Channels
+* Resources 
 
 ---
 
@@ -66,13 +67,81 @@ func main() {
 
 ## Collections: array
 
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    x := [4]int{1, 9, 8, 4}
+    for i, v := range x {
+        fmt.Printf("%d: %d\n", i, v)
+    }
+    var name [2]string
+    name[0] = "Jim"
+    name[1] = "Green"
+    fmt.Println(name[0] + " " + name[1])
+}
+```
+
 ---
 
 ## Collections: slices
 
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    nums := []int{1, 9, 8, 4}
+    fmt.Println(nums)
+
+    nums = append(nums, 0, 1)
+    nums = append(nums, []int{4, 2}...)
+    fmt.Println(nums)
+
+    prefix := nums[:4]
+    fmt.Printf("Prefix: %v\n", prefix)
+    fmt.Printf("Whole: %v\n", nums)
+
+    prefix[0] = 2
+    fmt.Printf("Whole: %v\n", nums)
+}
+```
+
 ---
 
 ## Collections: map
+
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    prices := make(map[string]float64)
+    prices["apple"] = 4.2
+    prices["orange"] = 3.3
+    for k, v := range prices {
+        fmt.Printf("The price of %s is %.2f\n", k, v)
+    }
+
+    if p, ok := prices["x"]; ok {
+        fmt.Printf("The price of x is %.2f\n", p)
+    } else {
+        fmt.Println("x not found")
+    }
+    
+    delete(prices, "apple")
+    fmt.Println(prices)
+}
+```
 
 ---
 
@@ -88,7 +157,14 @@ func main() {
 
 ---
 
-## Learning Resources
+## Channels
+
+---
+
+## Resources
+
+### Source of the slides
+* https://github.com/suzaku/intro-to-go
 
 ### Tutorial
 * [A Tour of Go](https://tour.golang.org/welcome/1)
