@@ -15,6 +15,7 @@ theme: ./theme.json
 * Collections: slices
 * Collections: map
 * Struct
+* Interface
 * Error Handling
 * Goroutines
 * Channels
@@ -23,6 +24,8 @@ theme: ./theme.json
 ---
 
 ## Hello World
+
+https://play.golang.org/p/dl55zgXA-p9
 
 ```go
 package main
@@ -37,6 +40,8 @@ func main() {
 ---
 
 ## More Hello to World
+
+https://play.golang.org/p/5mfImEW2PzV
 
 ```go
 package main
@@ -67,6 +72,8 @@ func main() {
 
 ## Collections: array
 
+https://play.golang.org/p/AAJYNrivEIP
+
 ```go
 package main
 
@@ -89,6 +96,8 @@ func main() {
 ---
 
 ## Collections: slices
+
+https://play.golang.org/p/TzoKtWJqc_y
 
 ```go
 package main
@@ -118,6 +127,7 @@ func main() {
 
 ## Collections: map
 
+https://play.golang.org/p/gKRdBgR9Cto
 
 ```go
 package main
@@ -147,6 +157,8 @@ func main() {
 
 ## Struct
 
+https://play.golang.org/p/qUc1_3pfV9y
+
 ```go
 package main
 
@@ -166,10 +178,7 @@ func (u User) String() string {
 }
 
 func main() {
-    jay := User{
-        name: "Jay Chou",
-        age: 42,
-    }
+    jay := User{name: "Jay Chou", age: 42}
     fmt.Println(jay)
     var baby User
     baby.SetName("Jim Green")
@@ -181,7 +190,44 @@ func main() {
 
 ---
 
+## Interface
+
+https://play.golang.org/p/-mFVwK-rQ7j
+
+```go
+package main
+
+import "fmt"
+
+type Talker interface {
+    talk() string
+}
+
+type Robot struct {}
+
+func (r Robot) talk() string {
+    return ".-.-...--.-.-"
+}
+
+type Fairy struct {}
+
+func (f Fairy) talk() string {
+    return "BabalaBabala"
+}
+
+func main() {
+    talkers := []Talker{Robot{}, Fairy{}}
+    for _, t := range talkers {
+        fmt.Println(t.talk())
+    }
+}
+```
+
+---
+
 ## Error Handling
+
+https://play.golang.org/p/_jagIL3eECL
 
 ```go
 package main
@@ -212,6 +258,8 @@ func main() {
 
 ## Goroutines
 
+https://play.golang.org/p/S8vd-1iGApl
+
 ```go
 package main
 
@@ -237,15 +285,14 @@ func main() {
 
 ---
 
-## Channels - Part 2
+## Channels - Multi-Workers Pattern
+
+https://play.golang.org/p/3q7fVIDfn_F
 
 ```go
 package main
 
-import (
-    "fmt"
-    "sync"
-)
+import "fmt"
 
 func worker(jobs <-chan int, result chan<- string) {
     for j := range jobs {
@@ -255,25 +302,77 @@ func worker(jobs <-chan int, result chan<- string) {
 
 func main() {
     jobs := make(chan int, 1)
+    const nJobs = 9
     go func() {
-        for i := 0; i < 128; i++ {
+        for i := 0; i < nJobs; i++ {
             jobs <- i
         }
         close(jobs)
     }()
-    const nWorkers = 4
+    const nWorkers = 2
     result := make(chan string, nWorkers)
-    var wg sync.WaitGroup
+    defer close(result)
     for i := 0; i < nWorkers; i++ {
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
-            worker(jobs, result)  
-        }()
+        go worker(jobs, result)  
     }
-    for r := range result {
+    for i := 0; i < nJobs; i++ {
+        r := <-result
         fmt.Print(r)
-        fmt.Print(",")
+        fmt.Print(" ")
+    }
+}
+```
+
+---
+
+## Channels - Merging-Stream Pattern
+
+https://play.golang.org/p/ELxRR5sQ2xf
+
+```go
+package main
+
+import "fmt"
+
+func numGenerator(init int, limit int) <-chan int {
+    out := make(chan int, 1)
+    go func () {
+        for i := 0; i < limit; i++ {
+            out <- init+i
+        }
+        close(out)
+    }()
+    return out
+}
+
+func main() {
+    s1 := numGenerator(0, 2)
+    s2 := numGenerator(100, 3)
+    s3 := numGenerator(1000, 2)
+    for {
+        select {
+        case x, ok := <-s1:
+            if !ok {
+                s1 = nil
+            } else {
+                fmt.Printf("%d ", x)
+            }
+        case x, ok := <-s2:
+            if !ok {
+                s2 = nil
+            } else {
+                fmt.Printf("%d ", x)
+            }
+        case x, ok := <-s3:
+            if !ok {
+                s3 = nil
+            } else {
+                fmt.Printf("%d ", x)
+            }
+        }
+        if s1 == nil && s2 == nil && s3 == nil {
+            break
+        }
     }
 }
 ```
