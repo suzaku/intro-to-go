@@ -327,7 +327,7 @@ func main() {
 
 ## Channels - Merging-Stream Pattern
 
-https://play.golang.org/p/9cWcM27jdmf
+https://play.golang.org/p/fyuWxII2hN9
 
 ```go
 package main
@@ -346,10 +346,10 @@ func numGenerator(init int, limit int) <-chan int {
 }
 
 func main() {
-    s1 := numGenerator(0, 2)
+    s1 := numGenerator(0, 7)
     s2 := numGenerator(100, 3)
     s3 := numGenerator(1000, 2)
-    for {
+    for s1 != nil || s2 != nil || s3 != nil {
         var x int
         var ok bool
         select {
@@ -365,9 +365,6 @@ func main() {
             if !ok {
                 s3 = nil
             }
-        }
-        if s1 == nil && s2 == nil && s3 == nil {
-            break
         }
         fmt.Printf("%d ", x)
     }
